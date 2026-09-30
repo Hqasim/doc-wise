@@ -1,0 +1,23 @@
+# Secrets and local env
+.env
+.env.prod
+frontend/.env.local
+
+# Personal notes
+notes/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+dist/
+.next/
+out/
+
+# AWS SAM
+.aws-sam/

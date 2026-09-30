@@ -1,0 +1,57 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: docwise
+      POSTGRES_PASSWORD: docwise
+      POSTGRES_DB: docwise
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docwise -d docwise"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # `make run` only: gunicorn needs Unix, so it runs here with the same flags as prod.
+  api:
+    profiles: ["api"]
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    working_dir: /app
+    command: uv run --locked gunicorn config.wsgi:application -b 0.0.0.0:8000 -k gthread --threads 4 --timeout 60
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://docwise:docwise@db:5432/docwise
+      REDIS_URL: redis://redis:6379/0
+      # Keep the container's venv out of the bind mount so it never clashes with the host .venv.
+      UV_PROJECT_ENVIRONMENT: /opt/venv
+      UV_LINK_MODE: copy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - apivenv:/opt/venv
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  apivenv:
