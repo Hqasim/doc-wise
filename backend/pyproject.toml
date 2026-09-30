@@ -1,0 +1,36 @@
+[project]
+name = "docwise-backend"
+version = "0.1.0"
+description = "DocWise API: cited answers over public IRS documents"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "dj-database-url>=3.1.2",
+    "django~=5.2",
+    "django-cors-headers>=4.9.0",
+    "django-ninja>=1.7.1",
+    "gunicorn>=26.2.0",
+    "psycopg[binary]>=3.3.6",
+    "redis>=8.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+    "ruff>=0.16.9",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+testpaths = ["tests"]
+markers = ["live: calls real Gemini; skipped unless RUN_LIVE=1"]
